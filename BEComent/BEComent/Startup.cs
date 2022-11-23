@@ -38,7 +38,15 @@ namespace BEComent
           services.AddDbContext<AplicationDbContext>(options =>
                   options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
 
-    }
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+            });
+
+        }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -49,6 +57,8 @@ namespace BEComent
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BEComent v1"));
             }
+
+            app.UseCors("CorsPolicy");
 
             app.UseHttpsRedirection();
 

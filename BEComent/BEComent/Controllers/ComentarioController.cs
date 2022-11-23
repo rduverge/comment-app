@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BEComent.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,36 +14,118 @@ namespace BEComent.Controllers
   [ApiController]
   public class ComentarioController : ControllerBase
   {
+    private readonly AplicationDbContext _context;
+    
+    public ComentarioController(AplicationDbContext context)
+        {
+            _context = context;
+        }
+    
     // GET: api/<ComentarioController>
     [HttpGet]
-    public IEnumerable<string> Get()
+    public async Task<IActionResult> Get()
     {
-      return new string[] { "value1", "value2" };
-    }
+      try
+            {
+                var listComentarios = await _context.Comentario.ToListAsync();
+                return Ok(listComentarios);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        // GET api/<ComentarioController>/
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            try
+            {
+                var comentario = await _context.Comentario.FindAsync(id);
 
-    // GET api/<ComentarioController>/5
-    [HttpGet("{id}")]
-    public string Get(int id)
-    {
-      return "value";
-    }
+                if (comentario == null)
+                {
+                    return NotFound();
+                }
 
-    // POST api/<ComentarioController>
-    [HttpPost]
-    public void Post([FromBody] string value)
-    {
-    }
+                return Ok(comentario);
 
-    // PUT api/<ComentarioController>/5
-    [HttpPut("{id}")]
-    public void Put(int id, [FromBody] string value)
-    {
-    }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-    // DELETE api/<ComentarioController>/5
-    [HttpDelete("{id}")]
-    public void Delete(int id)
-    {
+        // POST api/<ComentarioController>
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Comentario comentario)
+        {
+
+            try
+            {
+
+                _context.Add(comentario);
+                await _context.SaveChangesAsync();
+
+                return Ok(comentario);
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // PUT api/<ComentarioController>/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, [FromBody] Comentario comentario)
+        {
+            try
+            {
+                if (id != comentario.Id)
+                {
+                    return BadRequest();
+                }
+
+                _context.Update(comentario);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Comantario actualizado con exito!" });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        // DELETE api/<ComentarioController>/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+
+                var comentario = await _context.Comentario.FindAsync(id);
+
+                if (comentario == null)
+                {
+                    return NotFound();
+                }
+
+                _context.Comentario.Remove(comentario);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Comentario eliminado con exito!" });
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
-  }
 }
